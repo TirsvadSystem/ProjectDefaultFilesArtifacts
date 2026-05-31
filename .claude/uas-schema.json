@@ -1,0 +1,126 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "UnifiedArtifactStructure",
+  "description": "UAS v1 — Standard schema for all Claude-generated architecture and business artifacts.",
+  "type": "object",
+  "required": ["id", "artifact_type", "title", "version", "purpose", "inputs", "metadata"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Unique artifact identifier. Rules by type: BC/BMC/RISKS/FURPS/KPI/GLOSSARY/MILESTONES = fixed uppercase name. DOMAIN_MODEL = 'domain-model'. ERD = 'erd'. ADR = 'ADR' + 3-digit number (e.g. ADR001). UC artifacts = 'uc' + 3-digit UC number + '-' + artifact-slug (e.g. uc001-ssd, uc001-use-case).",
+      "examples": [
+        "BC", "BMC", "RISKS", "FURPS", "KPI", "GLOSSARY", "MILESTONES",
+        "domain-model", "erd",
+        "ADR001", "ADR002",
+        "uc001-use-case", "uc001-ssd", "uc001-sd", "uc001-oc",
+        "uc001-dcd", "uc001-domain-model-view", "uc001-erd-view"
+      ]
+    },
+    "artifact_type": {
+      "type": "string",
+      "description": "Artifact type code.",
+      "enum": [
+        "BC",
+        "BMC",
+        "RISKS",
+        "FURPS",
+        "KPI",
+        "GLOSSARY",
+        "MILESTONES",
+        "DOMAIN_MODEL",
+        "ERD",
+        "ADR",
+        "UC_SPEC",
+        "UC_SSD",
+        "UC_SD",
+        "UC_OC",
+        "UC_DCD",
+        "UC_DOMAIN_MODEL_VIEW",
+        "UC_ERD_VIEW"
+      ]
+    },
+    "title": {
+      "type": "string",
+      "description": "Human-readable artifact title."
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^\\d{3}$",
+      "description": "Incremental 3-digit version number, zero-padded. Starts at 001 for new artifacts, increments by 1 on each revision.",
+      "examples": ["001", "002", "010"]
+    },
+    "purpose": {
+      "type": "string",
+      "description": "One or two sentences describing what this artifact achieves and why it exists."
+    },
+    "inputs": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Explicit list of inputs (documents, decisions, data sources) used to derive this artifact.",
+      "minItems": 1
+    },
+    "metadata": {
+      "type": "object",
+      "required": ["domain"],
+      "properties": {
+        "domain": {
+          "type": "string",
+          "description": "Business or technical domain this artifact belongs to."
+        },
+        "tags": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Searchable tags, prefixed with # (e.g. #ecommerce, #ordering)."
+        },
+        "author": {
+          "type": "string",
+          "description": "Creator of this artifact version."
+        },
+        "created": {
+          "type": "string",
+          "format": "date",
+          "description": "ISO 8601 creation date (YYYY-MM-DD)."
+        },
+        "traceability": {
+          "type": "object",
+          "description": "Links to related artifacts for cross-artifact navigation.",
+          "properties": {
+            "relates_to": {
+              "type": "array",
+              "items": { "type": "string" },
+              "description": "IDs of artifacts this artifact relates to (e.g. ['BC', 'ADR001'])."
+            },
+            "supersedes": {
+              "type": "array",
+              "items": { "type": "string" },
+              "description": "IDs (or id+version) of artifacts this version replaces."
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "content_snapshot": {
+      "type": "object",
+      "description": "Optional machine-readable snapshot of key content fields for indexing and validation."
+    }
+  },
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "if": { "properties": { "artifact_type": { "const": "ADR" } } },
+      "then": { "properties": { "id": { "pattern": "^ADR\\d{3}$" } } }
+    },
+    {
+      "if": {
+        "properties": {
+          "artifact_type": {
+            "enum": ["UC_SPEC","UC_SSD","UC_SD","UC_OC","UC_DCD","UC_DOMAIN_MODEL_VIEW","UC_ERD_VIEW"]
+          }
+        }
+      },
+      "then": { "properties": { "id": { "pattern": "^uc\\d{3}-.+$" } } }
+    }
+  ]
+}
