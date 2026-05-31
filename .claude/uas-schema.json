@@ -1,24 +1,24 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "UnifiedArtifactStructure",
-  "description": "UAS v1 — Standard schema for all Claude-generated architecture and business artifacts.",
+  "description": "UAS v1 — Standard schema for all Claude-generated architecture and business artifacts. ID formats are defined in artifact-registry.json and enforced here via allOf conditionals.",
   "type": "object",
   "required": ["id", "artifact_type", "title", "version", "purpose", "inputs", "metadata"],
   "properties": {
     "id": {
       "type": "string",
-      "description": "Unique artifact identifier. Rules by type: BC/BMC/RISKS/FURPS/KPI/GLOSSARY/MILESTONES = fixed uppercase name. DOMAIN_MODEL = 'domain-model'. ERD = 'erd'. ADR = 'ADR' + 3-digit number (e.g. ADR001). UC artifacts = 'uc' + 3-digit UC number + '-' + artifact-slug (e.g. uc001-ssd, uc001-use-case).",
+      "description": "Unique artifact identifier. See artifact-registry.json for the exact format per artifact_type.",
       "examples": [
         "BC", "BMC", "RISKS", "FURPS", "KPI", "GLOSSARY", "MILESTONES",
-        "domain-model", "erd",
+        "DM", "ERD",
         "ADR001", "ADR002",
-        "uc001-use-case", "uc001-ssd", "uc001-sd", "uc001-oc",
-        "uc001-dcd", "uc001-domain-model-view", "uc001-erd-view"
+        "UC001", "UC001-SSD", "UC001-SD", "UC001-OC",
+        "UC001-DCD", "UC001-DM", "UC001-ERD"
       ]
     },
     "artifact_type": {
       "type": "string",
-      "description": "Artifact type code.",
+      "description": "Artifact type code matching the artifact_type field in artifact-registry.json.",
       "enum": [
         "BC",
         "BMC",
@@ -46,7 +46,7 @@
     "version": {
       "type": "string",
       "pattern": "^\\d{3}$",
-      "description": "Incremental 3-digit version number, zero-padded. Starts at 001 for new artifacts, increments by 1 on each revision.",
+      "description": "Incremental 3-digit version number, zero-padded. Starts at 001 for new artifacts.",
       "examples": ["001", "002", "010"]
     },
     "purpose": {
@@ -56,7 +56,7 @@
     "inputs": {
       "type": "array",
       "items": { "type": "string" },
-      "description": "Explicit list of inputs (documents, decisions, data sources) used to derive this artifact.",
+      "description": "Explicit list of inputs (documents, decisions, assumptions) used to derive this artifact.",
       "minItems": 1
     },
     "metadata": {
@@ -83,17 +83,17 @@
         },
         "traceability": {
           "type": "object",
-          "description": "Links to related artifacts for cross-artifact navigation.",
+          "description": "Links to related artifacts. Use IDs from artifact-registry.json.",
           "properties": {
             "relates_to": {
               "type": "array",
               "items": { "type": "string" },
-              "description": "IDs of artifacts this artifact relates to (e.g. ['BC', 'ADR001'])."
+              "description": "IDs of artifacts this artifact depends on or relates to."
             },
             "supersedes": {
               "type": "array",
               "items": { "type": "string" },
-              "description": "IDs (or id+version) of artifacts this version replaces."
+              "description": "IDs of artifacts this version replaces."
             }
           },
           "additionalProperties": false
@@ -103,7 +103,7 @@
     },
     "content_snapshot": {
       "type": "object",
-      "description": "Optional machine-readable snapshot of key content fields for indexing and validation."
+      "description": "Optional machine-readable snapshot of key content fields for indexing and CI validation."
     }
   },
   "additionalProperties": false,
@@ -113,14 +113,40 @@
       "then": { "properties": { "id": { "pattern": "^ADR\\d{3}$" } } }
     },
     {
-      "if": {
-        "properties": {
-          "artifact_type": {
-            "enum": ["UC_SPEC","UC_SSD","UC_SD","UC_OC","UC_DCD","UC_DOMAIN_MODEL_VIEW","UC_ERD_VIEW"]
-          }
-        }
-      },
-      "then": { "properties": { "id": { "pattern": "^uc\\d{3}-.+$" } } }
+      "if": { "properties": { "artifact_type": { "const": "DOMAIN_MODEL" } } },
+      "then": { "properties": { "id": { "pattern": "^DM$" } } }
+    },
+    {
+      "if": { "properties": { "artifact_type": { "const": "ERD" } } },
+      "then": { "properties": { "id": { "pattern": "^ERD$" } } }
+    },
+    {
+      "if": { "properties": { "artifact_type": { "const": "UC_SPEC" } } },
+      "then": { "properties": { "id": { "pattern": "^UC\\d{3}$" } } }
+    },
+    {
+      "if": { "properties": { "artifact_type": { "const": "UC_SSD" } } },
+      "then": { "properties": { "id": { "pattern": "^UC\\d{3}-SSD$" } } }
+    },
+    {
+      "if": { "properties": { "artifact_type": { "const": "UC_SD" } } },
+      "then": { "properties": { "id": { "pattern": "^UC\\d{3}-SD$" } } }
+    },
+    {
+      "if": { "properties": { "artifact_type": { "const": "UC_OC" } } },
+      "then": { "properties": { "id": { "pattern": "^UC\\d{3}-OC$" } } }
+    },
+    {
+      "if": { "properties": { "artifact_type": { "const": "UC_DCD" } } },
+      "then": { "properties": { "id": { "pattern": "^UC\\d{3}-DCD$" } } }
+    },
+    {
+      "if": { "properties": { "artifact_type": { "const": "UC_DOMAIN_MODEL_VIEW" } } },
+      "then": { "properties": { "id": { "pattern": "^UC\\d{3}-DM$" } } }
+    },
+    {
+      "if": { "properties": { "artifact_type": { "const": "UC_ERD_VIEW" } } },
+      "then": { "properties": { "id": { "pattern": "^UC\\d{3}-ERD$" } } }
     }
   ]
 }
