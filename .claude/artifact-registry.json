@@ -1,0 +1,545 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "registry_version": "001",
+  "description": "Centralized artifact registry — schema hub for Claude Skills generation. Defines every artifact type, its identity rules, templates, examples, dependencies, and validator.",
+  "uas_engine": ".claude/uas-engine.md",
+  "uas_schema": ".claude/uas-schema.json",
+
+  "artifacts": [
+
+    {
+      "id_value": "BC",
+      "artifact_type": "BC",
+      "name": "Business Case",
+      "short_name": "BC",
+      "description": "Justifies investment in the project by documenting the problem, proposed solution, costs, benefits, and strategic alignment.",
+      "purpose": "Provide decision-makers with the evidence needed to approve or reject the project initiative.",
+      "skill_command": "/create-bc",
+      "identification": {
+        "format": "Fixed — always 'BC'. One per project.",
+        "pattern": "^BC$",
+        "example": "BC"
+      },
+      "files": {
+        "template": "docs/specs/bc/business-case.md",
+        "examples": []
+      },
+      "depends_on": [],
+      "feeds_into": ["BMC", "RISKS", "FURPS", "KPI", "MILESTONES"],
+      "required_sections": [
+        "Problem Statement",
+        "Proposed Solution",
+        "Costs & Benefits",
+        "Strategic Alignment",
+        "Risks & Assumptions",
+        "Recommendation"
+      ],
+      "validator": "tools/validators/bc-validator.sh"
+    },
+
+    {
+      "id_value": "BMC",
+      "artifact_type": "BMC",
+      "name": "Business Model Canvas",
+      "short_name": "BMC",
+      "description": "Structured one-page overview of the business model across nine building blocks.",
+      "purpose": "Communicate the business model clearly to stakeholders and identify strategic dependencies.",
+      "skill_command": "/create-bmc",
+      "identification": {
+        "format": "Fixed — always 'BMC'. One per project.",
+        "pattern": "^BMC$",
+        "example": "BMC"
+      },
+      "files": {
+        "template": "docs/specs/bmc/business-model-canvas.md",
+        "examples": []
+      },
+      "depends_on": ["BC"],
+      "feeds_into": ["KPI", "GLOSSARY"],
+      "required_sections": [
+        "Key Partners",
+        "Key Activities",
+        "Key Resources",
+        "Value Propositions",
+        "Customer Relationships",
+        "Channels",
+        "Customer Segments",
+        "Cost Structure",
+        "Revenue Streams"
+      ],
+      "validator": "tools/validators/bmc-validator.sh"
+    },
+
+    {
+      "id_value": "RISKS",
+      "artifact_type": "RISKS",
+      "name": "Risk Register",
+      "short_name": "RISKS",
+      "description": "Catalogue of all identified project risks with likelihood, impact, mitigation strategies, and owners.",
+      "purpose": "Enable active risk tracking and management throughout the project lifecycle.",
+      "skill_command": "/create-risks",
+      "identification": {
+        "format": "Fixed — always 'RISKS'. One per project.",
+        "pattern": "^RISKS$",
+        "example": "RISKS"
+      },
+      "files": {
+        "template": "docs/specs/risks/risk-register.md",
+        "examples": []
+      },
+      "depends_on": ["BC"],
+      "feeds_into": ["MILESTONES"],
+      "required_sections": [
+        "Risk Rating Scale",
+        "Risk Register"
+      ],
+      "risk_id_format": "R-NNN",
+      "validator": "tools/validators/risk-validator.sh"
+    },
+
+    {
+      "id_value": "FURPS",
+      "artifact_type": "FURPS",
+      "name": "FURPS+ Requirements",
+      "short_name": "FURPS",
+      "description": "Non-functional and quality requirements across all FURPS+ dimensions.",
+      "purpose": "Ensure architecture decisions and acceptance criteria address all quality attributes.",
+      "skill_command": "/create-furps",
+      "identification": {
+        "format": "Fixed — always 'FURPS'. One per project.",
+        "pattern": "^FURPS$",
+        "example": "FURPS"
+      },
+      "files": {
+        "template": "docs/specs/furps/furps-plus.md",
+        "examples": []
+      },
+      "depends_on": ["BC"],
+      "feeds_into": ["ADR", "DM", "ERD"],
+      "required_sections": [
+        "Functionality",
+        "Usability",
+        "Reliability",
+        "Performance",
+        "Supportability",
+        "Design Constraints",
+        "Implementation Constraints",
+        "Interface Constraints",
+        "Physical Constraints"
+      ],
+      "requirement_id_format": {
+        "F": "F-NNN",
+        "U": "U-NNN",
+        "R": "R-NNN",
+        "P": "P-NNN",
+        "S": "S-NNN",
+        "D": "D-NNN",
+        "I": "I-NNN",
+        "IF": "IF-NNN",
+        "PH": "PH-NNN"
+      },
+      "validator": "tools/validators/furps-validator.sh"
+    },
+
+    {
+      "id_value": "KPI",
+      "artifact_type": "KPI",
+      "name": "KPI Catalog",
+      "short_name": "KPI",
+      "description": "Key Performance Indicators with measurement methods, targets, and owners.",
+      "purpose": "Enable objective evaluation of project and product success.",
+      "skill_command": "/create-kpi",
+      "identification": {
+        "format": "Fixed — always 'KPI'. One per project.",
+        "pattern": "^KPI$",
+        "example": "KPI"
+      },
+      "files": {
+        "template": "docs/specs/kpi/kpi-catalog.md",
+        "examples": []
+      },
+      "depends_on": ["BC", "BMC"],
+      "feeds_into": ["MILESTONES"],
+      "required_sections": [
+        "KPI Table"
+      ],
+      "kpi_id_format": "KPI-NNN",
+      "kpi_categories": ["Business", "Operational", "Quality", "Development"],
+      "validator": "tools/validators/kpi-validator.sh"
+    },
+
+    {
+      "id_value": "GLOSSARY",
+      "artifact_type": "GLOSSARY",
+      "name": "Glossary",
+      "short_name": "GLOSSARY",
+      "description": "Shared project vocabulary — terms, definitions, and synonyms used consistently across all artifacts.",
+      "purpose": "Eliminate ambiguity and align all stakeholders on a ubiquitous language.",
+      "skill_command": "/create-glossary",
+      "identification": {
+        "format": "Fixed — always 'GLOSSARY'. One per project.",
+        "pattern": "^GLOSSARY$",
+        "example": "GLOSSARY"
+      },
+      "files": {
+        "template": "docs/specs/glossary/glossary.md",
+        "examples": []
+      },
+      "depends_on": [],
+      "feeds_into": ["DM", "UC_SPEC"],
+      "required_sections": [
+        "Terms"
+      ],
+      "validator": "tools/validators/glossary-validator.sh"
+    },
+
+    {
+      "id_value": "MILESTONES",
+      "artifact_type": "MILESTONES",
+      "name": "Milestones & Gateways",
+      "short_name": "MILESTONES",
+      "description": "Project milestones and quality gates with entry/exit criteria.",
+      "purpose": "Provide clear delivery checkpoints and governance gates throughout the project.",
+      "skill_command": "/create-milestones",
+      "identification": {
+        "format": "Fixed — always 'MILESTONES'. One per project.",
+        "pattern": "^MILESTONES$",
+        "example": "MILESTONES"
+      },
+      "files": {
+        "template": "docs/specs/milestones-gateways/milestones.md",
+        "examples": []
+      },
+      "depends_on": ["BC", "RISKS"],
+      "feeds_into": ["KPI"],
+      "required_sections": [
+        "Milestones",
+        "Quality Gateways"
+      ],
+      "milestone_id_format": "M-NNN",
+      "gateway_id_format": "G-NNN",
+      "validator": "tools/validators/milestone-validator.sh"
+    },
+
+    {
+      "id_value": "DM",
+      "artifact_type": "DOMAIN_MODEL",
+      "name": "Domain Model",
+      "short_name": "DM",
+      "description": "Conceptual model of the business domain — entities, relationships, and core business rules expressed as a UML class diagram.",
+      "purpose": "Create a shared understanding of domain concepts between domain experts and developers.",
+      "skill_command": "/create-domain-model",
+      "identification": {
+        "format": "Fixed — always 'DM'. One per project.",
+        "pattern": "^DM$",
+        "example": "DM"
+      },
+      "files": {
+        "template": "docs/specs/domain-model/domain-model.md",
+        "examples": []
+      },
+      "depends_on": ["GLOSSARY"],
+      "feeds_into": ["ERD", "UC_SPEC", "UC_DM"],
+      "diagram_type": "Mermaid classDiagram",
+      "required_sections": [
+        "Diagram",
+        "Entity Descriptions"
+      ],
+      "validator": "tools/validators/domain-validator.sh"
+    },
+
+    {
+      "id_value": "ERD",
+      "artifact_type": "ERD",
+      "name": "Entity Relationship Diagram",
+      "short_name": "ERD",
+      "description": "Logical data model showing tables, columns, data types, and relationships.",
+      "purpose": "Define the database structure to guide implementation and ensure referential integrity.",
+      "skill_command": "/create-erd",
+      "identification": {
+        "format": "Fixed — always 'ERD'. One per project.",
+        "pattern": "^ERD$",
+        "example": "ERD"
+      },
+      "files": {
+        "template": "docs/specs/erd/erd.md",
+        "examples": []
+      },
+      "depends_on": ["DM", "GLOSSARY"],
+      "feeds_into": ["UC_ERD"],
+      "diagram_type": "Mermaid erDiagram",
+      "required_sections": [
+        "Diagram",
+        "Table Descriptions"
+      ],
+      "validator": "tools/validators/erd-validator.sh"
+    },
+
+    {
+      "id_value": "ADR{NNN}",
+      "artifact_type": "ADR",
+      "name": "Architecture Decision Record",
+      "short_name": "ADR",
+      "description": "Records a significant architectural decision with its context, rationale, alternatives, and consequences.",
+      "purpose": "Preserve institutional knowledge about why key decisions were made so future teams understand the reasoning.",
+      "skill_command": "/create-adr [NNN title]",
+      "identification": {
+        "format": "'ADR' + 3-digit zero-padded number. Increments per new ADR.",
+        "pattern": "^ADR\\d{3}$",
+        "example": "ADR001",
+        "numbering": "sequential, zero-padded, global across the project"
+      },
+      "files": {
+        "template": "docs/specs/adr/ADR-XXX-title.md",
+        "examples": [
+          "docs/specs/adr/ADR-001-example.md",
+          "docs/specs/adr/ADR-002-example.md"
+        ]
+      },
+      "file_naming": "ADR-{NNN}-{kebab-title}.md",
+      "depends_on": [],
+      "feeds_into": [],
+      "statuses": ["Proposed", "Accepted", "Deprecated", "Superseded"],
+      "required_sections": [
+        "Status",
+        "Context",
+        "Decision",
+        "Alternatives Considered",
+        "Consequences"
+      ],
+      "validator": "tools/validators/adr-validator.sh"
+    },
+
+    {
+      "id_value": "UC{NNN}",
+      "artifact_type": "UC_SPEC",
+      "name": "Use Case Specification",
+      "short_name": "UC-SPEC",
+      "description": "Specifies the complete interaction between actors and the system for a single use case, including all flows and pre/post-conditions.",
+      "purpose": "Provide a precise, testable description of system behaviour from the user's perspective.",
+      "skill_command": "/create-use-case [NNN name]",
+      "identification": {
+        "format": "'UC' + 3-digit zero-padded number. One per use case.",
+        "pattern": "^UC\\d{3}$",
+        "example": "UC001",
+        "numbering": "sequential, zero-padded"
+      },
+      "files": {
+        "template": "docs/specs/use-cases/uc{{use-case-number}}-{{use-case-name}}/use-case.md",
+        "examples": [
+          "docs/specs/use-cases/uc001-create-order/use-case.md",
+          "docs/specs/use-cases/uc002-cancel-order/use-case.md"
+        ]
+      },
+      "folder_naming": "uc{NNN}-{kebab-name}",
+      "depends_on": ["GLOSSARY", "DM"],
+      "feeds_into": ["UC{NNN}-SSD", "UC{NNN}-DM"],
+      "required_sections": [
+        "Overview",
+        "Preconditions",
+        "Main Flow",
+        "Alternate Flows",
+        "Exception Flows",
+        "Postconditions"
+      ],
+      "validator": "tools/validators/ssd-validator.sh"
+    },
+
+    {
+      "id_value": "UC{NNN}-SSD",
+      "artifact_type": "UC_SSD",
+      "name": "System Sequence Diagram",
+      "short_name": "SSD",
+      "description": "Shows external interactions between actors and the system boundary — no internal design exposed.",
+      "purpose": "Identify system operations (API surface) that must be designed and implemented.",
+      "skill_command": "/create-use-case [NNN name] ssd",
+      "identification": {
+        "format": "'UC' + 3-digit number + '-SSD'",
+        "pattern": "^UC\\d{3}-SSD$",
+        "example": "UC001-SSD"
+      },
+      "files": {
+        "template": "docs/specs/use-cases/uc{{use-case-number}}-{{use-case-name}}/ssd.md",
+        "examples": [
+          "docs/specs/use-cases/uc001-create-order/ssd.md",
+          "docs/specs/use-cases/uc002-cancel-order/ssd.md"
+        ]
+      },
+      "depends_on": ["UC{NNN}"],
+      "feeds_into": ["UC{NNN}-OC", "UC{NNN}-SD"],
+      "diagram_type": "Mermaid sequenceDiagram (actor ↔ System only)",
+      "required_sections": [
+        "Diagram",
+        "System Operations"
+      ],
+      "validator": "tools/validators/ssd-validator.sh"
+    },
+
+    {
+      "id_value": "UC{NNN}-OC",
+      "artifact_type": "UC_OC",
+      "name": "Operation Contract",
+      "short_name": "OC",
+      "description": "Defines pre- and post-conditions for each system operation identified in the SSD.",
+      "purpose": "Provide a formal, testable specification for each operation that developers must implement.",
+      "skill_command": "/create-use-case [NNN name] oc",
+      "identification": {
+        "format": "'UC' + 3-digit number + '-OC'",
+        "pattern": "^UC\\d{3}-OC$",
+        "example": "UC001-OC"
+      },
+      "files": {
+        "template": "docs/specs/use-cases/uc{{use-case-number}}-{{use-case-name}}/oc.md",
+        "examples": [
+          "docs/specs/use-cases/uc001-create-order/oc.md"
+        ]
+      },
+      "depends_on": ["UC{NNN}-SSD", "UC{NNN}", "DM"],
+      "feeds_into": ["UC{NNN}-SD", "UC{NNN}-DCD", "UC{NNN}-ERD"],
+      "required_sections": [
+        "Contract per system operation (preconditions, postconditions)"
+      ],
+      "validator": "tools/validators/oc-validator.sh"
+    },
+
+    {
+      "id_value": "UC{NNN}-SD",
+      "artifact_type": "UC_SD",
+      "name": "Sequence Diagram",
+      "short_name": "SD",
+      "description": "Shows full internal object-level interactions realising each system operation.",
+      "purpose": "Reveal the design solution and responsibility assignment for each operation.",
+      "skill_command": "/create-use-case [NNN name] sd",
+      "identification": {
+        "format": "'UC' + 3-digit number + '-SD'",
+        "pattern": "^UC\\d{3}-SD$",
+        "example": "UC001-SD"
+      },
+      "files": {
+        "template": "docs/specs/use-cases/uc{{use-case-number}}-{{use-case-name}}/sd.md",
+        "examples": [
+          "docs/specs/use-cases/uc001-create-order/sd.md"
+        ]
+      },
+      "depends_on": ["UC{NNN}-SSD", "UC{NNN}-OC", "UC{NNN}-DCD"],
+      "feeds_into": [],
+      "diagram_type": "Mermaid sequenceDiagram (full internal, one per system operation)",
+      "required_sections": [
+        "Diagram per system operation"
+      ],
+      "validator": "tools/validators/sd-validator.sh"
+    },
+
+    {
+      "id_value": "UC{NNN}-DCD",
+      "artifact_type": "UC_DCD",
+      "name": "Design Class Diagram",
+      "short_name": "DCD",
+      "description": "Implementation-level class structure with methods, attributes, and types needed to realise the use case.",
+      "purpose": "Bridge domain model and code — define the classes developers will implement.",
+      "skill_command": "/create-use-case [NNN name] dcd",
+      "identification": {
+        "format": "'UC' + 3-digit number + '-DCD'",
+        "pattern": "^UC\\d{3}-DCD$",
+        "example": "UC001-DCD"
+      },
+      "files": {
+        "template": "docs/specs/use-cases/uc{{use-case-number}}-{{use-case-name}}/dcd.md",
+        "examples": [
+          "docs/specs/use-cases/uc001-create-order/dcd.md"
+        ]
+      },
+      "depends_on": ["UC{NNN}-OC", "UC{NNN}-DM"],
+      "feeds_into": ["UC{NNN}-SD"],
+      "diagram_type": "Mermaid classDiagram (implementation level)",
+      "required_sections": [
+        "Diagram",
+        "Class Descriptions"
+      ],
+      "validator": "tools/validators/dcd-validator.sh"
+    },
+
+    {
+      "id_value": "UC{NNN}-DM",
+      "artifact_type": "UC_DOMAIN_MODEL_VIEW",
+      "name": "Domain Model View",
+      "short_name": "DM-VIEW",
+      "description": "Scoped subset of the project Domain Model showing only entities relevant to this use case.",
+      "purpose": "Focus the developer's attention on the domain context needed for a single use case.",
+      "skill_command": "/create-use-case [NNN name] dm",
+      "identification": {
+        "format": "'UC' + 3-digit number + '-DM'",
+        "pattern": "^UC\\d{3}-DM$",
+        "example": "UC001-DM"
+      },
+      "files": {
+        "template": "docs/specs/use-cases/uc{{use-case-number}}-{{use-case-name}}/domain-model-view.md",
+        "examples": [
+          "docs/specs/use-cases/uc001-create-order/domain-model-view.md"
+        ]
+      },
+      "depends_on": ["DM", "UC{NNN}"],
+      "feeds_into": ["UC{NNN}-DCD"],
+      "diagram_type": "Mermaid classDiagram (subset of DM)",
+      "constraint": "READ-ONLY view — do not add entities not present in DM",
+      "required_sections": [
+        "Diagram",
+        "Entities In Scope"
+      ],
+      "validator": "tools/validators/domain-validator.sh"
+    },
+
+    {
+      "id_value": "UC{NNN}-ERD",
+      "artifact_type": "UC_ERD_VIEW",
+      "name": "ERD View",
+      "short_name": "ERD-VIEW",
+      "description": "Scoped subset of the project ERD showing only tables read or written by this use case.",
+      "purpose": "Identify the data access footprint of a single use case.",
+      "skill_command": "/create-use-case [NNN name] erd",
+      "identification": {
+        "format": "'UC' + 3-digit number + '-ERD'",
+        "pattern": "^UC\\d{3}-ERD$",
+        "example": "UC001-ERD"
+      },
+      "files": {
+        "template": "docs/specs/use-cases/uc{{use-case-number}}-{{use-case-name}}/erd-view.md",
+        "examples": [
+          "docs/specs/use-cases/uc001-create-order/erd-view.md"
+        ]
+      },
+      "depends_on": ["ERD", "UC{NNN}", "UC{NNN}-OC"],
+      "feeds_into": [],
+      "diagram_type": "Mermaid erDiagram (subset of ERD)",
+      "constraint": "READ-ONLY view — do not add tables not present in ERD",
+      "required_sections": [
+        "Diagram",
+        "Tables In Scope"
+      ],
+      "validator": "tools/validators/erd-validator.sh"
+    }
+
+  ],
+
+  "dependency_order": [
+    "GLOSSARY",
+    "BC",
+    "BMC",
+    "RISKS",
+    "FURPS",
+    "KPI",
+    "MILESTONES",
+    "DM",
+    "ERD",
+    "ADR{NNN}",
+    "UC{NNN}",
+    "UC{NNN}-SSD",
+    "UC{NNN}-OC",
+    "UC{NNN}-DM",
+    "UC{NNN}-DCD",
+    "UC{NNN}-SD",
+    "UC{NNN}-ERD"
+  ],
+
+  "traceability_validator": "tools/validators/traceability-validator.sh"
+}

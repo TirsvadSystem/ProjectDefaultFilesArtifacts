@@ -5,6 +5,7 @@ Default files for software projects — includes AI Claude skills, spec artifact
 ## 📋 Table of Contents
 
 - [📁 Repository Structure](#-repository-structure)
+- [📚 Artifact Registry](#-artifact-registry)
 - [🎛️ Unified Artifact Structure (UAS)](#-unified-artifact-structure-uas)
 - [📄 Specification Artifacts](#-specification-artifacts)
   - [💼 Business Case](#-business-case)
@@ -51,8 +52,21 @@ Default files for software projects — includes AI Claude skills, spec artifact
 │       └── artifact-quality.yml   # CI quality checker
 │
 ├── .claude/
+│   ├── artifact-registry.json     # Centralized artifact registry (schema hub)
 │   ├── uas-engine.md              # Artifact generation rules and templates
-│   └── uas-schema.json            # JSON schema for artifact validation
+│   ├── uas-schema.json            # JSON schema for artifact validation
+│   └── commands/                  # Claude slash commands (one per artifact type)
+│       ├── create-bc.md           # /create-bc
+│       ├── create-bmc.md          # /create-bmc
+│       ├── create-risks.md        # /create-risks
+│       ├── create-furps.md        # /create-furps
+│       ├── create-kpi.md          # /create-kpi
+│       ├── create-glossary.md     # /create-glossary
+│       ├── create-milestones.md   # /create-milestones
+│       ├── create-domain-model.md # /create-domain-model
+│       ├── create-erd.md          # /create-erd
+│       ├── create-adr.md          # /create-adr [NNN title]
+│       └── create-use-case.md     # /create-use-case [NNN name] [artifact]
 │
 └── tools/
     └── validators/                # Validator shell scripts
@@ -60,14 +74,66 @@ Default files for software projects — includes AI Claude skills, spec artifact
 
 ---
 
+## 📚 Artifact Registry
+
+The **centralized artifact registry** at [`.claude/artifact-registry.json`](.claude/artifact-registry.json) is the single source of truth for every artifact type in this project.
+
+It defines, for each artifact:
+- **Name, description, and purpose**
+- **Identification rules** — exact `id` format and regex pattern
+- **Template and example file paths**
+- **Dependency graph** — which artifacts feed into which
+- **Required sections** — what content the artifact must contain
+- **Validator script** — which tool checks it in CI
+
+### Artifact Overview
+
+| Artifact | ID format | Skill command | Depends on |
+|----------|-----------|---------------|------------|
+| Business Case | `BC` | `/create-bc` | — |
+| Business Model Canvas | `BMC` | `/create-bmc` | BC |
+| Risk Register | `RISKS` | `/create-risks` | BC |
+| FURPS+ | `FURPS` | `/create-furps` | BC |
+| KPI Catalog | `KPI` | `/create-kpi` | BC, BMC |
+| Glossary | `GLOSSARY` | `/create-glossary` | — |
+| Milestones & Gateways | `MILESTONES` | `/create-milestones` | BC, RISKS |
+| Domain Model | `DM` | `/create-domain-model` | GLOSSARY |
+| ERD | `ERD` | `/create-erd` | DM, GLOSSARY |
+| Architecture Decision Record | `ADR001`, `ADR002`… | `/create-adr [NNN title]` | — |
+| Use Case Specification | `UC001`, `UC002`… | `/create-use-case [NNN name]` | GLOSSARY, DM |
+| System Sequence Diagram | `UC001-SSD`… | `/create-use-case [NNN name] ssd` | UC{NNN} |
+| Operation Contract | `UC001-OC`… | `/create-use-case [NNN name] oc` | UC{NNN}-SSD |
+| Domain Model View | `UC001-DM`… | `/create-use-case [NNN name] dm` | DM, UC{NNN} |
+| Design Class Diagram | `UC001-DCD`… | `/create-use-case [NNN name] dcd` | UC{NNN}-OC, UC{NNN}-DM |
+| Sequence Diagram | `UC001-SD`… | `/create-use-case [NNN name] sd` | UC{NNN}-DCD |
+| ERD View | `UC001-ERD`… | `/create-use-case [NNN name] erd` | ERD, UC{NNN}-OC |
+
+### Dependency Order
+
+Artifacts should be created in this order to ensure each one can reference its inputs:
+
+```
+GLOSSARY → BC → BMC
+               → RISKS → MILESTONES
+               → FURPS
+               → KPI
+         → DM  → ERD
+               → UC{NNN} → UC{NNN}-SSD → UC{NNN}-OC → UC{NNN}-DM → UC{NNN}-DCD → UC{NNN}-SD
+                                                                                 → UC{NNN}-ERD
+ADR{NNN} (independent — created as decisions arise)
+```
+
+---
+
 ## 🎛️ Unified Artifact Structure (UAS)
 
-All specification artifacts follow the **Unified Artifact Structure Standard (UAS)**, enforced by two files in `.claude/`:
+All specification artifacts follow the **Unified Artifact Structure Standard (UAS)**, enforced by three files in `.claude/`:
 
 | File | Purpose |
 |------|--------|
-| [``.claude/uas-engine.md`](.claude/uas-engine.md) | Defines **rules and templates** for generating each artifact type (IDs, versions, sections, traceability) |
-| [``.claude/uas-schema.json`](.claude/uas-schema.json) | Defines the **JSON schema** for validating artifact content snapshots and metadata |
+| [`.claude/artifact-registry.json`](.claude/artifact-registry.json) | **Single source of truth** — lists every artifact type, its ID format, templates, examples, dependencies, and validator |
+| [`.claude/uas-engine.md`](.claude/uas-engine.md) | **Generation rules** — identification table, versioning rules, output template, and section guide per artifact type |
+| [`.claude/uas-schema.json`](.claude/uas-schema.json) | **JSON Schema** — validates artifact metadata and content snapshots; enforces ID patterns per type |
 
 **How it works:**
 
