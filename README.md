@@ -1,15 +1,16 @@
-# ProjectDefaultFilesArtifacts
+# Default files for project. It includes AI skills and quality criteria
 
 Default files for software projects — includes AI Claude skills, spec artifact templates, validation tools, and quality criteria.
 
 ## 📋 Table of Contents
 
 - [📁 Repository Structure](#-repository-structure)
+- [🎛️ Unified Artifact Structure (UAS)](#-unified-artifact-structure-uas)
 - [📄 Specification Artifacts](#-specification-artifacts)
   - [💼 Business Case](#-business-case)
   - [🗺️ Business Model Canvas](#️-business-model-canvas)
   - [⚠️ Risk Register](#️-risk-register)
-  - [✅ FURPS+](#-furps)
+  - [✅ FURPS+](#-furps+)
   - [📊 KPI Catalog](#-kpi-catalog)
   - [📖 Glossary](#-glossary)
   - [🏁 Milestones & Gateways](#-milestones--gateways)
@@ -49,8 +50,106 @@ Default files for software projects — includes AI Claude skills, spec artifact
 │   └── workflows/
 │       └── artifact-quality.yml   # CI quality checker
 │
+├── .claude/
+│   ├── uas-engine.md              # Artifact generation rules and templates
+│   └── uas-schema.json            # JSON schema for artifact validation
+│
 └── tools/
     └── validators/                # Validator shell scripts
+```
+
+---
+
+## 🎛️ Unified Artifact Structure (UAS)
+
+All specification artifacts follow the **Unified Artifact Structure Standard (UAS)**, enforced by two files in `.claude/`:
+
+| File | Purpose |
+|------|--------|
+| [``.claude/uas-engine.md`](.claude/uas-engine.md) | Defines **rules and templates** for generating each artifact type (IDs, versions, sections, traceability) |
+| [``.claude/uas-schema.json`](.claude/uas-schema.json) | Defines the **JSON schema** for validating artifact content snapshots and metadata |
+
+**How it works:**
+
+1. **`uas-engine.md`** tells the generator **what** to produce:
+   - Each artifact must have a unique `id` per type (e.g., `BC`, `UC001`, `ADR001`)
+   - Version must be 3-digit zero-padded (`001`, `002`, not `v1.0.0`)
+   - Must list all inputs (documents, decisions, assumptions)
+   - Must include traceability links to related artifacts
+   - Must include a `JSON Snapshot` block at the end
+
+2. **`uas-schema.json`** tells the generator **how to validate**:
+   - All artifacts must conform to this JSON schema
+   - CI/CD tools can automatically validate artifacts against it
+   - Enforces ID patterns, version formats, and required fields
+
+**Why it matters:**
+
+- ✅ **Consistency** — Every artifact follows the same structure
+- ✅ **Validation** — CI can automatically check compliance
+- ✅ **Traceability** — Artifacts are linked together
+- ✅ **Automation** — Easy to integrate with tools and workflows
+
+For detailed rules and templates, see [`uas-engine.md`](.claude/uas-engine.md).
+
+### Artifact Output Structure
+
+All artifacts use a consistent structure with the following fields:
+
+| Field | Description | Example |
+|-------|-------------|----------|
+| `id` | Unique identifier per artifact type | `BC`, `UC001`, `ADR001` |
+| `artifact_type` | Artifact type code | `BC`, `BMC`, `RISKS` |
+| `title` | Human-readable title | `Business Case` |
+| `version` | 3-digit version number | `001` |
+| `purpose` | One or two sentences explaining the artifact | `Describes the business justification...` |
+| `inputs` | List of documents, decisions, assumptions used | `Requirements doc v2.1` |
+| `metadata.domain` | Business/technical domain | `ecommerce` |
+| `metadata.tags` | Searchable tags | `#ecommerce`, `#ordering` |
+| `metadata.author` | Creator of this artifact version | `Jane Doe` |
+| `metadata.created` | ISO 8601 date | `2026-05-31` |
+| `metadata.traceability.relates_to` | Related artifact IDs | [`ADR001`, `BC`] |
+| `metadata.traceability.supersedes` | Replaced artifact IDs | `[]` |
+
+### Artifact Content Sections
+
+Different artifact types require different sections:
+
+| Type | Required Sections |
+|------|-------------------|
+| BC | Problem Statement, Proposed Solution, Costs \& Benefits, Strategic Alignment, Recommendation |
+| BMC | Key Partners, Key Activities, Key Resources, Value Propositions, Customer Relationships, Channels, Customer Segments, Cost Structure, Revenue Streams |
+| RISKS | Risk Table (ID, Description, Likelihood, Impact, Mitigation, Owner, Status) |
+| FURPS | Functionality, Usability, Reliability, Performance, Supportability, Design Constraints, Implementation Constraints, Interface Constraints, Physical Constraints |
+| KPI | KPI Table (ID, Name, Description, Formula, Target, Owner, Frequency) |
+| GLOSSARY | Term Table (Term, Definition, Synonyms, Source) |
+| MILESTONES | Milestone Table (ID, Name, Target Date, Entry Criteria, Exit Criteria, Owner, Status) |
+| DOMAIN_MODEL | Mermaid `classDiagram`, entity descriptions |
+| ERD | Mermaid `erDiagram`, table descriptions |
+| ADR | Status, Context, Decision, Consequences |
+| UC_SPEC | Actors, Preconditions, Main Flow, Alternate Flows, Exception Flows, Postconditions |
+| UC_SSD | Mermaid `sequenceDiagram` (actor ↔ system boundary only) |
+| UC_SD | Mermaid `sequenceDiagram` (full internal object interactions) |
+| UC_OC | Operation Contract Table (Operation, Preconditions, Postconditions) |
+| UC_DCD | Mermaid `classDiagram` (implementation classes, methods, attributes) |
+| UC_DOMAIN_MODEL_VIEW | Mermaid `classDiagram` (domain entities relevant to this UC only) |
+| UC_ERD_VIEW | Mermaid `erDiagram` (tables relevant to this UC only) |
+
+### JSON Snapshot
+
+Every artifact ends with a machine-readable JSON Snapshot:
+
+```json
+{
+  "id": "UC001",
+  "artifact_type": "UC_SPEC",
+  "version": "001",
+  "content_snapshot": {
+    "actors": ["Customer", "Admin"],
+    "preconditions": ["User is authenticated"],
+    "tags": ["#ordering", "#customer"]
+  }
+}
 ```
 
 ---
@@ -201,6 +300,14 @@ Shell scripts that validate each artifact type against its quality criteria:
 | [`erd-validator.sh`](tools/validators/erd-validator.sh) | ERD |
 | [`adr-validator.sh`](tools/validators/adr-validator.sh) | Architecture Decision Records |
 | [`traceability-validator.sh`](tools/validators/traceability-validator.sh) | Cross-artifact traceability |
+
+**Schema Validation:**
+
+All artifacts generated by the UAS engine include a `JSON Snapshot` block at the end that validates against [`uas-schema.json`](.claude/uas-schema.json). This enables:
+
+- Automatic validation in CI/CD pipelines
+- Machine-readable indexing and search
+- Consistent metadata extraction
 
 ---
 
