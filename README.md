@@ -19,6 +19,7 @@ Default files for software projects — includes AI Claude skills, spec artifact
   - [🗄️ Entity Relationship Diagram](#️-entity-relationship-diagram)
   - [📌 Architecture Decision Records](#-architecture-decision-records)
   - [🔄 Use Cases](#-use-cases)
+- [🎨 Diagram Tool (PlantUML)](#-diagram-tool-plantuml)
 - [🔍 Quality Criteria](#-quality-criteria)
 - [🤖 Validation Tools](#-validation-tools)
 - [⚙️ GitHub Actions CI](#️-github-actions-ci)
@@ -40,10 +41,27 @@ Default files for software projects — includes AI Claude skills, spec artifact
 │       ├── glossary/              # Project Glossary
 │       ├── milestones-gateways/   # Milestones & Gateways
 │       ├── domain-model/          # Domain Model
+│       │   ├── domain-model.md    #   → artifact
+│       │   ├── domain-model.puml  #   → PlantUML source
+│       │   └── domain-model.svg   #   → generated SVG (CI)
 │       ├── erd/                   # Entity Relationship Diagram
+│       │   ├── erd.md
+│       │   ├── erd.puml
+│       │   └── erd.svg
 │       ├── adr/                   # Architecture Decision Records
 │       └── use-cases/             # Use Case artifacts
 │           ├── uc001-create-order/ # example
+│           │   ├── use-case.md
+│           │   ├── ssd.md  ssd.puml  ssd.svg
+│           │   ├── sd.md   sd.puml   sd.svg
+│           │   ├── oc.md
+│           │   ├── dcd.md  dcd.puml  dcd.svg
+│           │   ├── domain-model-view.md
+│           │   ├── domain-model-view.puml
+│           │   ├── domain-model-view.svg
+│           │   ├── erd-view.md
+│           │   ├── erd-view.puml
+│           │   └── erd-view.svg
 │           ├── uc002-cancel-order/ # example
 │           └── uc{{use-case-number}}-{{use-case-name}}/   # Template
 │
@@ -190,16 +208,16 @@ Different artifact types require different sections:
 | KPI | KPI Table (ID, Name, Description, Formula, Target, Owner, Frequency) |
 | GLOSSARY | Term Table (Term, Definition, Synonyms, Source) |
 | MILESTONES | Milestone Table (ID, Name, Target Date, Entry Criteria, Exit Criteria, Owner, Status) |
-| DOMAIN_MODEL | Mermaid `classDiagram`, entity descriptions |
-| ERD | Mermaid `erDiagram`, table descriptions |
-| ADR | Status, Context, Decision, Consequences |
+| DOMAIN_MODEL | PlantUML class diagram (`.puml` + `.svg`), entity descriptions table |
+| ERD | PlantUML entity-relationship diagram (`.puml` + `.svg`), table descriptions table |
+| ADR | Status, Context, Decision, Alternatives Considered, Consequences |
 | UC_SPEC | Actors, Preconditions, Main Flow, Alternate Flows, Exception Flows, Postconditions |
-| UC_SSD | Mermaid `sequenceDiagram` (actor ↔ system boundary only) |
-| UC_SD | Mermaid `sequenceDiagram` (full internal object interactions) |
+| UC_SSD | PlantUML sequence diagram — actor ↔ system boundary only (`.puml` + `.svg`), system operations table |
+| UC_SD | PlantUML sequence diagram — full internal interactions, one diagram per operation (`.puml` + `.svg`) |
 | UC_OC | Operation Contract Table (Operation, Preconditions, Postconditions) |
-| UC_DCD | Mermaid `classDiagram` (implementation classes, methods, attributes) |
-| UC_DOMAIN_MODEL_VIEW | Mermaid `classDiagram` (domain entities relevant to this UC only) |
-| UC_ERD_VIEW | Mermaid `erDiagram` (tables relevant to this UC only) |
+| UC_DCD | PlantUML class diagram — implementation classes, methods, attributes (`.puml` + `.svg`), class descriptions table |
+| UC_DOMAIN_MODEL_VIEW | PlantUML class diagram — scoped to this UC's domain entities (`.puml` + `.svg`) |
+| UC_ERD_VIEW | PlantUML entity-relationship diagram — scoped to this UC's tables (`.puml` + `.svg`) |
 
 ### JSON Snapshot
 
@@ -284,7 +302,7 @@ Project milestones, delivery gates, entry/exit criteria, and target dates.
 
 **Path:** [`docs/specs/domain-model/domain-model.md`](docs/specs/domain-model/domain-model.md)
 
-Conceptual model of the business domain — entities, relationships, and core business rules expressed as a UML class diagram (Mermaid).
+Conceptual model of the business domain — entities, relationships, and core business rules. Diagram source in `domain-model.puml` (PlantUML), rendered as `domain-model.svg`.
 
 ---
 
@@ -292,7 +310,7 @@ Conceptual model of the business domain — entities, relationships, and core bu
 
 **Path:** [`docs/specs/erd/erd.md`](docs/specs/erd/erd.md)
 
-Logical data model showing tables, columns, data types, and relationships (Mermaid ERD).
+Logical data model showing tables, columns, data types, and relationships. Diagram source in `erd.puml` (PlantUML), rendered as `erd.svg`.
 
 ---
 
@@ -316,15 +334,17 @@ Each ADR captures a significant architectural decision: context, decision, conse
 
 Each use case is a self-contained folder with the following artifacts:
 
-| File | Artifact | Description |
-|------|----------|-------------|
-| `use-case.md` | Use Case Specification | Actor, preconditions, main flow, alternate flows |
-| `ssd.md` | System Sequence Diagram | External interactions between actor and system |
-| `sd.md` | Sequence Diagram | Internal object-level interactions |
+| File(s) | Artifact | Description |
+|---------|----------|-------------|
+| `use-case.md` | Use Case Specification | Actor, preconditions, main flow, alternate flows, postconditions |
+| `ssd.md` · `ssd.puml` · `ssd.svg` | System Sequence Diagram | External actor ↔ system interactions; identifies system operations |
+| `sd.md` · `sd.puml` · `sd.svg` | Sequence Diagram | Full internal object interactions per system operation |
 | `oc.md` | Operation Contract | Pre/post-conditions for each system operation |
-| `dcd.md` | Design Class Diagram | Implementation-level class structure |
-| `domain-model-view.md` | Domain Model View | Subset of the domain model relevant to this use case |
-| `erd-view.md` | ERD View | Subset of the ERD relevant to this use case |
+| `dcd.md` · `dcd.puml` · `dcd.svg` | Design Class Diagram | Implementation-level class structure with method signatures |
+| `domain-model-view.md` · `domain-model-view.puml` · `domain-model-view.svg` | Domain Model View | Scoped subset of the domain model for this use case |
+| `erd-view.md` · `erd-view.puml` · `erd-view.svg` | ERD View | Scoped subset of the ERD for this use case |
+
+> **Diagram files:** `.puml` is the editable PlantUML source. `.svg` is auto-generated by CI and embedded in the `.md` file via `![title](filename.svg)`. Never embed diagram syntax directly in `.md` files.
 
 **Example use cases:**
 
@@ -332,6 +352,52 @@ Each use case is a self-contained folder with the following artifacts:
 - [`uc002-cancel-order/`](docs/specs/use-cases/uc002-cancel-order/)
 
 **Template:** [`uc{{use-case-number}}-{{use-case-name}}/`](docs/specs/use-cases/uc{{use-case-number}}-{{use-case-name}}/)
+
+---
+
+## 🎨 Diagram Tool (PlantUML)
+
+All UML diagrams in this project are authored in **[PlantUML](https://plantuml.com/)** and exported as **SVG** for embedding in Markdown files.
+
+### File convention
+
+Every diagram artifact produces three files:
+
+| File | Role | Edit? |
+|------|------|:-----:|
+| `{name}.puml` | PlantUML source — single source of truth | ✅ Yes |
+| `{name}.svg` | SVG export — auto-generated by CI | ❌ No |
+| `{name}.md` | Artifact documentation — embeds the SVG | ✅ Yes |
+
+The `.md` file references the SVG with a plain image tag:
+
+```markdown
+> Source: [`ssd.puml`](ssd.puml)
+
+![UC001 System Sequence Diagram](ssd.svg)
+```
+
+### Diagram types and PlantUML syntax
+
+| Artifact | Diagram type | PlantUML keyword |
+|----------|-------------|-----------------|
+| Domain Model, DCD, Domain Model View | Class diagram | `@startuml` + `class` |
+| SSD, SD | Sequence diagram | `@startuml` + `actor` / `participant` |
+| ERD, ERD View | Entity-relationship | `@startuml` + `entity` |
+
+Full PlantUML skeletons (with skinparam defaults) are defined in [`.claude/uas-engine.md`](.claude/uas-engine.md) under **DIAGRAM CONVENTION**.
+
+### Generating SVGs locally
+
+```bash
+# Single file
+plantuml -tsvg docs/specs/domain-model/domain-model.puml
+
+# All diagrams in the project
+find docs/specs -name "*.puml" -exec plantuml -tsvg {} \;
+```
+
+> **Requires:** Java + PlantUML JAR, or the `plantuml` CLI. CI handles this automatically — see [`.github/workflows/artifact-quality.yml`](.github/workflows/artifact-quality.yml).
 
 ---
 
@@ -381,4 +447,13 @@ All artifacts generated by the UAS engine include a `JSON Snapshot` block at the
 
 **Path:** [`.github/workflows/artifact-quality.yml`](.github/workflows/artifact-quality.yml)
 
-Automated CI pipeline that runs all validators on every pull request and push to `main`, ensuring artifact quality gates are met before merging.
+Automated CI pipeline that runs on every pull request and push to `main`:
+
+| Step | What it does |
+|------|-------------|
+| **PlantUML → SVG** | Finds all `*.puml` files and generates `.svg` exports |
+| **Artifact validators** | Runs all `tools/validators/*.sh` scripts |
+| **Schema validation** | Validates JSON Snapshot blocks against `uas-schema.json` |
+| **Traceability check** | `traceability-validator.sh` verifies cross-artifact links are consistent |
+
+All steps must pass before a pull request can be merged.
